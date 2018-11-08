@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import openSocket from 'socket.io-client';
 import './Map.css';
 
 class Map extends Component {
@@ -18,6 +19,7 @@ class Map extends Component {
     }
     componentDidMount() {
         this.generateMap();
+        // const socket = openSocket('http://localhost:4800');
     }
     handleMovement(key) {
         const { posx, posy, mapWidth, mapHeight, mapGrid } = this.state;
