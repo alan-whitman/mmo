@@ -43,11 +43,14 @@ class Map extends Component {
             default:
                 return;
         }
-        // && potentialx > 0 && potentialy > 0 && potentialx < mapWidth && potentialy < mapHeight
-        if (!mapGrid[potentialx][potentialy])
-            this.setState({posx: potentialx, posy: potentialy});
-        else
+        if (potentialx === -1 || potentialy === -1) {
             return;
+        }
+        else if (potentialx >= 0 && potentialx < mapWidth && potentialy >= 0 && potentialy < mapHeight) {
+            if (mapGrid[potentialx][potentialy] === 0 ) {
+                    this.setState({posx: potentialx, posy: potentialy});
+            }
+        }
 
     }
     generateMap() {
