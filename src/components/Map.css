@@ -1,0 +1,30 @@
+.map {
+    position: relative;
+    width: 502px;
+    height: 502px;
+    border: 1px solid lightgrey;
+    outline: 0px;
+}
+.mapTileEmpty {
+    width: 20px;
+    height: 20px;
+    border: 1px solid black;
+    position: absolute;
+
+}
+.mapTileFilled {
+    width: 20px;
+    height: 20px;
+    border: 1px solid black;
+    position: absolute;
+    background-color: black;
+
+}
+.player {
+    background-color: green;
+    border-radius: 10px;
+    height: 16px;
+    width: 16px;
+    position: absolute;
+    z-index: 10;
+}
