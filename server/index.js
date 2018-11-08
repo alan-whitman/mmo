@@ -24,4 +24,10 @@ const port = 4800;
 //     }
 // }))
 
+app.get('/', (req, res) => res.sendFile(__dirname + '/index.html'))
+
+io.on('connection', (socket) => {
+    console.log('a user connected');
+});
+
 app.listen(port, () => console.log(port));
