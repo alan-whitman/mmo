@@ -1,28 +1,36 @@
 import React, { Component } from 'react';
-import openSocket from 'socket.io-client';
 import './Map.css';
+import { requestNewPlayer, updatePlayerPos, updatePlayers } from '../socket/socket';
 
 class Map extends Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             mapWidth: 30,
             mapHeight: 30,
-            posx: 0,
-            posy: 0,
-            mapGrid: []
+            mapGrid: [],
+            player: {
+                name: this.props.playerName,
+                posx: 0,
+                posy: 0,
+                id: -1
+            },
+            otherPlayers: [],
         }
+        requestNewPlayer(this.props.playerName, (err, newPlayerData) => {
+            this.setState({player: {...this.state.player, posx: newPlayerData.posx, posy: newPlayerData.posy, id: newPlayerData.id}, mapGrid: newPlayerData.map})
+        });
+        updatePlayers((err, players) => {
+            this.setState({otherPlayers: players});
+        });
         this.renderPlayer = this.renderPlayer.bind(this);
         this.renderMap = this.renderMap.bind(this);
         this.handleMovement = this.handleMovement.bind(this);
         this.generateMap = this.generateMap.bind(this);
     }
-    componentDidMount() {
-        this.generateMap();
-        // const socket = openSocket('http://localhost:4800');
-    }
     handleMovement(key) {
-        const { posx, posy, mapWidth, mapHeight, mapGrid } = this.state;
+        const { mapWidth, mapHeight, mapGrid } = this.state;
+        const { posx, posy } = this.state.player;
         let potentialx = -1;
         let potentialy = -1;
         switch (key) {
@@ -50,10 +58,10 @@ class Map extends Component {
         }
         else if (potentialx >= 0 && potentialx < mapWidth && potentialy >= 0 && potentialy < mapHeight) {
             if (mapGrid[potentialx][potentialy] === 0 ) {
-                    this.setState({posx: potentialx, posy: potentialy});
+                    this.setState({player: {...this.state.player, posx: potentialx, posy: potentialy}});
             }
         }
-
+        updatePlayerPos(this.state.player);
     }
     generateMap() {
         console.log('generating map...');
@@ -63,14 +71,21 @@ class Map extends Component {
             mapGrid[column] = [];
             for (let row = 0; row < this.state.mapWidth; row++) {
                 rand = Math.random() * 100;
-                mapGrid[column][row] = rand < 10 ? 1 : 0;
+                mapGrid[column][row] = rand < 10 ? 0 : 0;
             }
         }
         this.setState({mapGrid});
     }
     renderPlayer() {
-        const { posx, posy } = this.state;
-        return <div className="player" style={{left: posx * 20 + 2, top: posy * 20 + 2}}></div>
+        let playerz = [];
+        // const { posx, posy } = this.state.player;
+        // playerz.push(<div className="player" style={{left: posx * 20 + 2, top: posy * 20 + 2}}></div>)
+        this.state.otherPlayers.forEach(player => {
+            const { posx, posy } = player;
+            playerz.push(<div className="player" style={{left: posx * 20 + 2, top: posy * 20 + 2}}></div>)
+        })
+        return playerz;
+
     }
     renderMap() {
         const { mapGrid: mg } = this.state;
@@ -88,6 +103,7 @@ class Map extends Component {
     render() {
         return (
             <div className="Map">
+                <div>You are {this.state.player.name}. Your player id is {this.state.player.id}</div>
                 <div className="map" tabIndex="0" onKeyDown={e => this.handleMovement(e.key)}>
                     {this.state.mapGrid[0] ? this.renderMap() : false}
                     {this.renderPlayer()}

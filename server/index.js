@@ -1,33 +1,38 @@
-const app = require('express')();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
-// const bodyParser = require('body-parser');
-// const session = require('express-session');
-// const massive = require('massive');
-require('dotenv').config();
+const io = require('socket.io')();
 const port = 4800;
+const pc = require('./controllers/playerController');
+const sc = require('./controllers/serverController');
 
-// const { CONNECTION_STRING: cs, SERVER_PORT: port, SESSION_SECRET: ss } = process.env;
+const map = sc.generateMap();
 
-// massive(cs).then(db =>  {
-//     app.set('db', db);
-//     console.log('db is connected');
-// });
+let nextPlayerId = 0;
+let players = [];
 
-// app.use(bodyParser.json());
-// app.use(session({
-//     resave: false,
-//     saveUninitialized: true,
-//     secret: ss,
-//     cookie: {
-//         maxAge: 999999
-//     }
-// }))
-
-app.get('/', (req, res) => res.sendFile(__dirname + '/index.html'))
-
-io.on('connection', (socket) => {
+io.on('connection', (client) => {
     console.log('a user connected');
+    client.on('requestNewPlayer', (name) => {
+        let newPlayerData = {
+            posx: 0,
+            posy: 0,
+            name,
+            id: nextPlayerId++
+        }
+        players.push(newPlayerData);
+        client.emit('sendNewPlayer', {...newPlayerData, map});
+    });
+    client.on('updatePlayerPos', (updatingPlayer) => {
+        let updatingPlayerId = players.findIndex(player => player.id === updatingPlayer.id);
+        players[updatingPlayerId] = updatingPlayer;
+        client.emit('updatePlayers', players);
+    });
+    setInterval(() => {
+        client.emit('updatePlayers', players)
+    }, 200)
+
+    // client.on('getPlayerId', () => {
+    //     console.log('getting player id...')
+    //     client.emit('assignPlayerId', pc.assignPlayerId());
+    // })
 });
 
-app.listen(port, () => console.log(port));
+io.listen(port);
