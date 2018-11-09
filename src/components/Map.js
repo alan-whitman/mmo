@@ -16,6 +16,8 @@ class Map extends Component {
                 id: -1
             },
             otherPlayers: [],
+            canMove: true,
+            canRender: true
         }
         requestNewPlayer(this.props.playerName, (err, newPlayerData) => {
             this.setState({player: {...this.state.player, posx: newPlayerData.posx, posy: newPlayerData.posy, id: newPlayerData.id}, mapGrid: newPlayerData.map})
@@ -26,9 +28,10 @@ class Map extends Component {
         this.renderPlayer = this.renderPlayer.bind(this);
         this.renderMap = this.renderMap.bind(this);
         this.handleMovement = this.handleMovement.bind(this);
-        this.generateMap = this.generateMap.bind(this);
     }
     handleMovement(key) {
+        if (!this.state.canMove)
+            return;
         const { mapWidth, mapHeight, mapGrid } = this.state;
         const { posx, posy } = this.state.player;
         let potentialx = -1;
@@ -62,29 +65,23 @@ class Map extends Component {
             }
         }
         updatePlayerPos(this.state.player);
-    }
-    generateMap() {
-        console.log('generating map...');
-        let mapGrid = [];
-        let rand = 0;
-        for (let column = 0; column < this.state.mapHeight; column++) {
-            mapGrid[column] = [];
-            for (let row = 0; row < this.state.mapWidth; row++) {
-                rand = Math.random() * 100;
-                mapGrid[column][row] = rand < 10 ? 0 : 0;
-            }
-        }
-        this.setState({mapGrid});
+        // this.state.canMove = false;
+        // setTimeout(() => this.setState({canMove: true}), 200)
     }
     renderPlayer() {
-        let playerz = [];
-        // const { posx, posy } = this.state.player;
-        // playerz.push(<div className="player" style={{left: posx * 20 + 2, top: posy * 20 + 2}}></div>)
-        this.state.otherPlayers.forEach(player => {
+        const { posx, posy } = this.state.player;
+        return <div className="player" style={{left: posx * 20 + 2, top: posy * 20 + 2}}></div>
+
+    }
+    renderOtherPlayers() {
+        let players = [];
+        this.state.otherPlayers.forEach((player, i) => {
+            if (i === this.state.player.id)
+                return;
             const { posx, posy } = player;
-            playerz.push(<div className="player" style={{left: posx * 20 + 2, top: posy * 20 + 2}}></div>)
+            players.push(<div className="player" style={{left: posx * 20 + 2, top: posy * 20 + 2}}></div>)
         })
-        return playerz;
+        return players;
 
     }
     renderMap() {
@@ -107,6 +104,7 @@ class Map extends Component {
                 <div className="map" tabIndex="0" onKeyDown={e => this.handleMovement(e.key)}>
                     {this.state.mapGrid[0] ? this.renderMap() : false}
                     {this.renderPlayer()}
+                    {this.renderOtherPlayers()}
                 </div>
             </div>
         )

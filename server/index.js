@@ -27,7 +27,8 @@ io.on('connection', (client) => {
     });
     setInterval(() => {
         client.emit('updatePlayers', players)
-    }, 200)
+        // console.log('hi');
+    }, 100)
 
     // client.on('getPlayerId', () => {
     //     console.log('getting player id...')
